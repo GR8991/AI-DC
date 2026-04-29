@@ -1,7 +1,7 @@
 """
 Tier III & IV Reliability Analyzer — IEEE Certified  v3.0
 ===========================================================
-Sunstripe Engineering  |  Hecate Energy AI Data Center Project
+Reliability Engineering Methodology
 April 2026
 
 CHANGELOG v3.0 (vs user's v2):
@@ -253,7 +253,7 @@ Final BESS: **MWh = max(Constraint A_MWh, Constraint B_MWh)**
 <div class="param-card">
 <div class="param-name">Total IT Load (MW) <span class="param-default">default: 500 MW</span></div>
 The total power demand of the IT equipment — servers, GPUs, networking, cooling.
-For Hecate Energy: <b>500 MW</b> Phase 1, expanding to 1,000–2,000 MW Phase 2.
+Example: <b>500 MW</b> Phase 1, expanding to 1,000–2,000 MW Phase 2.
 <br><span class="param-source">Source: Project specification</span>
 </div>
 
@@ -261,7 +261,7 @@ For Hecate Energy: <b>500 MW</b> Phase 1, expanding to 1,000–2,000 MW Phase 2.
 <div class="param-name">Single Generator Size (MW) <span class="param-default">default: 95 MW</span></div>
 The output rating of each individual reciprocating engine unit.
 The tool calculates N = ⌈IT_Load / Engine_MW⌉ as the minimum number of engines needed.
-For Hecate: 95 MW engines → N = ⌈500/95⌉ = 6 engines minimum.
+Example: 95 MW engines → N = ⌈500/95⌉ = 6 engines minimum.
 <br><span class="param-source">Source: OEM specification (CAT/GE/Cummins datasheet)</span>
 </div>
 """, unsafe_allow_html=True)
@@ -452,8 +452,8 @@ If there is no SLA, use the conservative (168 hr) row for design margin.
 | **ρ (rho)** | λ/μ — ratio of failure rate to repair rate. Small ρ = high reliability. |
 | **SoC** | State of Charge — percentage of battery energy remaining (0% = empty, 100% = full) |
 | **T_deplete** | Time for BESS to run out of usable energy at current SoC, given the power gap |
-| **Tier III** | Uptime Institute standard — concurrently maintainable, N+1 redundancy, 99.982% target |
-| **Tier IV** | Uptime Institute standard — fault tolerant, 2N redundancy, 99.995% target |
+| **Tier III** | Uptime Institute standard — *Concurrently Maintainable*, N+1 redundancy. No official availability % target (removed 2009). |
+| **Tier IV** | Uptime Institute standard — *Fault Tolerant*, 2N redundancy. No official availability % target (removed 2009). |
 | **β (beta)** | CMF beta-factor — fraction of failures caused by shared infrastructure |
 | **λ (lambda)** | Failure rate per hour = 1/MTBF |
 | **μ (mu)** | Repair rate per hour = 1/MTTR |
@@ -540,6 +540,20 @@ def render_analyzer(load_mw, engine_mw, peak_idle_ratio, gb300_smoothing,
             dominant_tiers.append(f"{cfg['label']} ({r['cmf_pct']:.1f}%)")
 
     st.dataframe(pd.DataFrame(table_rows), use_container_width=True, hide_index=True)
+
+    # ── UPTIME INSTITUTE CLARIFICATION NOTE ───────────────────────────────────
+    st.info(
+        """**ℹ️ Uptime Institute Tier Standard — important context for reviewers**
+
+**Tier III** = *Concurrently Maintainable* — N+1 redundancy. Any component can be maintained without shutting down IT load.
+**Tier IV** = *Fault Tolerant* — 2N redundancy. Any single failure does not impact IT operations.
+
+The Uptime Institute **removed all availability percentage targets from the Tier Standard in 2009** because they caused confusion between infrastructure capability and probabilistic reliability analysis. The current official Tier Standard (Topology) defines physical and operational capabilities only — not nines of availability.
+
+The availability figures in the table above are calculated using the **IEEE 493-2007 Markov model** applied to those infrastructure architectures. They are engineering calculations — not Uptime Institute specifications.
+
+The widely cited industry figures (99.982% Tier III, 99.995% Tier IV) are engineering estimates historically derived at MTTR = 168 hours (conservative). See the MTTR Sensitivity table in Section 5 to reproduce those figures."""
+    )
 
     # CMF dominance warning with ranked mitigation list
     if dominant_tiers:
@@ -784,7 +798,7 @@ def main():
     st.markdown(
         "IEEE 493 & IEEE 1032 standards  |  "
         "Fully auditable downtime allocations  |  "
-        "Hecate Energy — 500 MW AI Data Center"
+        "AI Data Center BESS Reliability Analysis"
     )
 
     # ── SIDEBAR ────────────────────────────────────────────────────────────────
