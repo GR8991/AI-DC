@@ -1,5 +1,4 @@
-math
-pandas
 streamlit==1.33.0
 numpy==1.26.4
 scipy==1.11.4
+pandas==2.2.2
